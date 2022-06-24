@@ -1,54 +1,36 @@
-import React, { Component } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 
 import Person from './Person/Person';
 
-class Persons extends Component {
-  // static getDerivedStateFromProps(props, state) {
-  //   console.log('[Persons.js] getDerivedStateFromProps');
-  //   return state;
-  // }
+const Persons = ({ persons, clicked, changed }) => {
 
-  // componentWillReceiveProps(props) {
-  //   console.log('[Persons.js] componentWillReceiveProps', props);
-  // }
+  console.log('[Persons.js] rendering...');
 
+  useEffect(() => {
+    console.log('[Persons.js] componentDidMount');
+    return () => console.log('[Persons.js] componentWillUnMount');
+  }, [])
 
-  //Usado para decidir se um componente deve ser re renderizado
-  shouldComponentUpdate(nextProps, nextState) {
-    console.log('[Persons.js] shouldComponentUpdate');
-    return true;
-  }
+  //componentDidUpdate 
+  const firstUpdate = useRef(true);
+  useLayoutEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
+    console.log('componentDidUpdate');
+  });
 
+  return persons.map((person, index) =>
+    <Person
+      click={() => clicked(index)}
+      name={person.name}
+      age={person.age}
+      key={person.id}
+      changed={event => changed(event, person.id)}
+    />
+  )
 
-  getSnapshotBeforeUpdate(prevProps, prevState) {
-    console.log('[Persons.js] getSnapshotBeforeUpdate');
-    return { message: 'Snapshot!' };
-  }
-  // Depreciado, foi trocado pela getSnapshopBeforeUpdate
-  // componentWillUpdate() {
-
-  // }
-
-  //É executado logo apos o update
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    console.log('[Persons.js] componentDidUpdate');
-    console.log(snapshot);
-  }
-
-  render() {
-    console.log('[Persons.js] rendering...');
-    return this.props.persons.map((person, index) => {
-      return (
-        <Person
-          click={() => this.props.clicked(index)}
-          name={person.name}
-          age={person.age}
-          key={person.id}
-          changed={event => this.props.changed(event, person.id)}
-        />
-      );
-    });
-  }
 }
 
 export default Persons;
