@@ -1,121 +1,72 @@
-import React, { Component } from 'react';
+import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 
 import classes from './App.css';
 import Persons from '../components/Persons/Persons';
 import Cockpit from '../components/Cockpit/Cockpit';
 
-class App extends Component {
-  //Construtor -> Chamado antes do componente ser mountado
-  //Uso: Iniciar estado local ou fazer bind de algum metodo
-  constructor(props) {
-    super(props);
-    console.log('[App.js] constructor');
-    
-    this.state = {      
-        persons: [
-          { id: 'asfa1', name: 'Max', age: 28 },
-          { id: 'vasdf1', name: 'Manu', age: 29 },
-          { id: 'asdf11', name: 'Stephanie', age: 26 }
-        ],
-        otherState: 'some other value',
-        showPersons: false      
-    }
-  }
+const App = ({ appTitle }) => {
+  const [persons, setPersons] = useState([
+    { id: 'asfa1', name: 'Max', age: 28 },
+    { id: 'vasdf1', name: 'Manu', age: 29 },
+    { id: 'asdf11', name: 'Stephanie', age: 26 }
+  ])
+  const [otherState, setOtherState] = useState('some other value')
+  const [showPersons, setShowPersons] = useState(false)
 
-  
-
-  static getDerivedStateFromProps(props, state) {
-    console.log('[App.js] getDerivedStateFromProps', props);
-    return state;
-  }
-  // Depreciado -> trocado pelo getDerivedStateFromProps
-  //
-  // componentWillMount() {
-  //   console.log('[App.js] componentWillMount');
-  // }
-  
-  //Executado assim que o componente é montado
-  //Uso: Fazer requests ou subscriptions
-  componentDidMount() {
-    console.log('[App.js] componentDidMount');
-  }
-
-  //Executado quando o componente está prestes a ser desmontado
-  //Uso: Desfazer subscription ou algum tipo de "limpeza"
-  componentWillMount(){
-    console.log('[App.js] componentDidMount');
-  }
-
-  //Mais rarament usados
-
-  //Decider se o Componente deve ou não ser rerenderizado
-  shouldComponentUpdate(nextProps, nextState) {
-    console.log('[App.js] shouldComponentUpdate');
-    return true;
-  }
-  //Executado logo apos um update
-  componentDidUpdate() {
-    console.log('[App.js] componentDidUpdate');
-  }
-
-  nameChangedHandler = (event, id) => {
-    const personIndex = this.state.persons.findIndex(p => {
+  const nameChangedHandler = (event, id) => {
+    const personIndex = persons.findIndex(p => {
       return p.id === id;
     });
-
-    const person = {
-      ...this.state.persons[personIndex]
-    };
-
-    // const person = Object.assign({}, this.state.persons[personIndex]);
-
+    const person = { ...persons[personIndex] };
+    const _persons = [...persons];
     person.name = event.target.value;
-
-    const persons = [...this.state.persons];
-    persons[personIndex] = person;
-
-    this.setState({ persons: persons });
+    _persons[personIndex] = person;
+    setPersons(_persons);
   };
 
-  deletePersonHandler = personIndex => {
-    // const persons = this.state.persons.slice();
-    const persons = [...this.state.persons];
-    persons.splice(personIndex, 1);
-    this.setState({ persons: persons });
+  const deletePersonHandler = personIndex => {
+    const _persons = [...persons];
+    _persons.splice(personIndex, 1);
+    setPersons(_persons);
   };
 
-  togglePersonsHandler = () => {
-    const doesShow = this.state.showPersons;
-    this.setState({ showPersons: !doesShow });
-  };
+  const togglePersonsHandler = () => setShowPersons(!showPersons);
+  
+  const firstUpdate = useRef(true);
 
-  render() {
-    console.log('[App.js] render');
-    let persons = null;
+  useEffect(() => {
+    console.log('[App.js] componentDidMount')
+    return () => { console.log('[App.js] componentWillUnMount') }
+  }, [])
 
-    if (this.state.showPersons) {
-      persons = (
-        <Persons
-          persons={this.state.persons}
-          clicked={this.deletePersonHandler}
-          changed={this.nameChangedHandler}
-        />
-      );
+  useLayoutEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
     }
+    console.log('componentDidUpdate');
+  });
 
-    return (
-      <div className={classes.App}>
-        <Cockpit
-          title={this.props.appTitle}
-          showPersons={this.state.showPersons}
-          persons={this.state.persons}
-          clicked={this.togglePersonsHandler}
+  console.log('[App.js] render');
+
+  return (
+    <div className={classes.App}>
+      <Cockpit
+        title={appTitle}
+        showPersons={showPersons}
+        persons={persons}
+        clicked={togglePersonsHandler}
+      />
+      {showPersons && (
+        <Persons
+          persons={persons}
+          clicked={deletePersonHandler}
+          changed={nameChangedHandler}
         />
-        {persons}
-      </div>
-    );
-    // return React.createElement('div', {className: 'App'}, React.createElement('h1', null, 'Does this work now?'));
-  }
+      )}
+    </div>
+  );
 }
 
 export default App;
+
